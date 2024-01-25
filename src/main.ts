@@ -5,6 +5,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
   await app.listen(8000);
-  console.log('Server started at port 8000')
+  console.log('Server started at port 8000');
 }
 bootstrap();
