@@ -1,22 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Db, MongoClient } from 'mongodb';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require('dotenv').config();
+import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class ConnectionService {
-  private static client: MongoClient;
+  private static client: PrismaClient;
 
-  static async connectDb(): Promise<Db> {
+  static connectDb(): PrismaClient {
     if (!this.client) {
-      this.client = new MongoClient(process.env.DATABASE_URL);
-
-      await this.client
-        .connect()
-        .then(() => console.log('Connected to database'))
-        .catch((err) => console.error('Error connecting to database', err));
+      this.client = new PrismaClient();
     }
-    return this.client.db();
+    return this.client;
   }
 }
