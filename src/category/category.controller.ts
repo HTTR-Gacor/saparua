@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 // import { QuoteService } from 'src/quote/quote.service';
 import { CategoryService } from './category.service';
 
@@ -14,5 +14,10 @@ export class CategoryController {
   @Get()
   async getAllCategories() {
     return this.categoryService.getAllCategories();
+  }
+
+  @Delete(':id')
+  async deleteCategory(@Param('id') id: string) {
+    await this.categoryService.deleteCateogry(id);
   }
 }

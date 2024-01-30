@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Param } from '@nestjs/common';
+import { Body, Controller, Get, Post, Param, Delete } from '@nestjs/common';
 import { QuoteService } from './quote.service';
 
 @Controller('quote')
@@ -28,5 +28,10 @@ export class QuoteController {
   @Get('random')
   async getRandomQuote() {
     return this.quoteService.getRandomQuote();
+  }
+
+  @Delete(':id')
+  async deleteQuote(@Param('id') id: string) {
+    await this.quoteService.deleteQuote(id);
   }
 }

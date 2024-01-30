@@ -53,6 +53,9 @@ export class QuoteService {
         verified,
         categories: { connect: setCategories },
       },
+      include: {
+        categories: true,
+      },
     });
 
     return newQuote;
@@ -69,5 +72,14 @@ export class QuoteService {
     // });
 
     // return editQuote;
+  }
+
+  async deleteQuote(id: string) {
+    const prisma = ConnectionService.connectDb();
+    await prisma.quote.delete({
+      where: {
+        id,
+      },
+    });
   }
 }
