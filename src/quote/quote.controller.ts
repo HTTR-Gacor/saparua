@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Param } from '@nestjs/common';
 import { QuoteService } from './quote.service';
 
 @Controller('quote')
@@ -12,5 +12,20 @@ export class QuoteController {
     @Body('verified') verified: boolean,
   ) {
     return this.quoteService.createQuote(quote, author, verified);
+  }
+
+  @Get()
+  async getAllQuotes() {
+    return this.quoteService.getAllQuotes();
+  }
+
+  @Get('by-id/:id')
+  async getQuoteById(@Param('id') id: string) {
+    return this.quoteService.getQuoteById(id);
+  }
+
+  @Get('random')
+  async getRandomQuote() {
+    return this.quoteService.getRandomQuote();
   }
 }

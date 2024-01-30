@@ -26,4 +26,5 @@ model QuoteCategory {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   quoteId String @db.ObjectId
   categoryId String @db.ObjectId
+  name String
 }
