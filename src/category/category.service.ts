@@ -3,6 +3,12 @@ import { ConnectionService } from 'src/connection/connection.service';
 
 @Injectable()
 export class CategoryService {
+  async getAllCategories() {
+    const prisma = ConnectionService.connectDb();
+    const categories = await prisma.category.findMany();
+    return categories;
+  }
+
   async createCategory(name: string) {
     const prisma = ConnectionService.connectDb();
     const newCategory = await prisma.category.create({
@@ -12,17 +18,12 @@ export class CategoryService {
     });
     return newCategory;
   }
-  async deleteCateogry(id: string, name: string) {
+
+  async deleteCateogry(id: string) {
     const prisma = ConnectionService.connectDb();
     await prisma.category.delete({
       where: {
         id: id,
-        name: name,
-      },
-    });
-    await prisma.quoteCategory.deleteMany({
-      where: {
-        categoryId: id,
       },
     });
   }

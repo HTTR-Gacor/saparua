@@ -10,8 +10,9 @@ export class QuoteController {
     @Body('quote') quote: string,
     @Body('author') author: string,
     @Body('verified') verified: boolean,
+    @Body('categories') categories: string[],
   ) {
-    return this.quoteService.createQuote(quote, author, verified);
+    return this.quoteService.createQuote(quote, author, verified, categories);
   }
 
   @Get()
