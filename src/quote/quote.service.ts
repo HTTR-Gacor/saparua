@@ -6,7 +6,11 @@ import { ConnectionService } from 'src/connection/connection.service';
 export class QuoteService {
   async getAllQuotes(): Promise<Quote[]> {
     const prisma = ConnectionService.connectDb();
-    const quotes = await prisma.quote.findMany();
+    const quotes = await prisma.quote.findMany({
+      include: {
+        categories: true,
+      },
+    });
     return quotes;
   }
 
@@ -16,17 +20,12 @@ export class QuoteService {
       where: {
         id,
       },
-    });
-    const categories = await prisma.quoteCategory.findMany({
-      where: {
-        quoteId: quote.id,
+      include: {
+        categories: true,
       },
     });
-    const res = {
-      ...quote,
-      categories,
-    };
-    return res;
+
+    return quote;
   }
 
   async getRandomQuote() {
@@ -35,13 +34,24 @@ export class QuoteService {
     return quotes[index];
   }
 
-  async createQuote(quote: string, author: string, verified: boolean) {
+  async createQuote(
+    quote: string,
+    author: string,
+    verified: boolean,
+    categories: string[],
+  ) {
     const prisma = ConnectionService.connectDb();
+
+    const setCategories = categories.map((category) => ({
+      id: category,
+    }));
+
     const newQuote = await prisma.quote.create({
       data: {
         quote,
         author,
         verified,
+        categories: { connect: setCategories },
       },
     });
 

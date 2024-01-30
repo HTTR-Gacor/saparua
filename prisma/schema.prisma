@@ -6,25 +6,20 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model Quote {
-  id         String     @id @default(auto()) @map("_id") @db.ObjectId
-  quote      String
+  id         String     @id @default(uuid())
+  quote      String     @unique
   author     String     @default("Wise Man")
   verified   Boolean
+  categories Category[]
 }
 
 model Category {
-  id     String     @id @default(auto()) @map("_id") @db.ObjectId
-  name   String
-}
-
-model QuoteCategory {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  quoteId String @db.ObjectId
-  categoryId String @db.ObjectId
-  name String
+  id     String  @id @default(uuid())
+  name   String  @unique
+  quotes Quote[]
 }
