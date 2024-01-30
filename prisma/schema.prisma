@@ -1,0 +1,25 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Quote {
+  id         String     @id @default(uuid())
+  quote      String     @unique
+  author     String     @default("Wise Man")
+  verified   Boolean
+  categories Category[]
+}
+
+model Category {
+  id     String  @id @default(uuid())
+  name   String  @unique
+  quotes Quote[]
+}
