@@ -18,6 +18,6 @@ export class CategoryController {
 
   @Delete(':id')
   async deleteCategory(@Param('id') id: string) {
-    await this.categoryService.deleteCateogry(id);
+    return this.categoryService.deleteCateogry(id);
   }
 }
