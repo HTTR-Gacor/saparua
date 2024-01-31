@@ -26,7 +26,7 @@ export class QuoteService {
   async getQuoteById(id: string) {
     try {
       const prisma = ConnectionService.connectDb();
-      const quote = await prisma.quote.findUnique({
+      const quote = await prisma.quote.findUniqueOrThrow({
         where: {
           id,
         },
@@ -35,16 +35,17 @@ export class QuoteService {
         },
       });
 
-      if (!quote) {
-        throw new HttpException(
-          'No quote with such ID',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
       return quote;
     } catch (err) {
       console.log(err);
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === 'P2025') {
+          throw new HttpException(
+            'No quote with such ID',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
       throw new HttpException(
         'Something went wrong',
         HttpStatus.INTERNAL_SERVER_ERROR,
