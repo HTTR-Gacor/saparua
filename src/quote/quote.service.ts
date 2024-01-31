@@ -70,12 +70,12 @@ export class QuoteService {
     quote: string,
     author: string,
     verified: boolean,
-    categories: string[],
+    categoryIds: string[],
   ) {
     const prisma = ConnectionService.connectDb();
 
-    const setCategories = categories.map((category) => ({
-      id: category,
+    const setCategoryIds = categoryIds.map((id) => ({
+      id,
     }));
 
     const newQuote = await prisma.quote.create({
@@ -83,7 +83,7 @@ export class QuoteService {
         quote,
         author,
         verified,
-        categories: { connect: setCategories },
+        categories: { connect: setCategoryIds },
       },
       include: {
         categories: true,
