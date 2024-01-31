@@ -24,17 +24,32 @@ export class QuoteService {
   }
 
   async getQuoteById(id: string) {
-    const prisma = ConnectionService.connectDb();
-    const quote = await prisma.quote.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        categories: true,
-      },
-    });
+    try {
+      const prisma = ConnectionService.connectDb();
+      const quote = await prisma.quote.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          categories: true,
+        },
+      });
 
-    return quote;
+      if (!quote) {
+        throw new HttpException(
+          'No quote with such ID',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return quote;
+    } catch (err) {
+      console.log(err);
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async getRandomQuote() {
