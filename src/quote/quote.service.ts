@@ -2,6 +2,16 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Prisma, Quote } from '@prisma/client';
 import { ConnectionService } from 'src/connection/connection.service';
 
+const internalServerError = new HttpException(
+  'Something went wrong',
+  HttpStatus.INTERNAL_SERVER_ERROR,
+);
+
+const noQuoteWithSuchId = new HttpException(
+  'No quote with such ID',
+  HttpStatus.BAD_REQUEST,
+);
+
 @Injectable()
 export class QuoteService {
   async getAllQuotes(): Promise<Quote[]> {
@@ -16,10 +26,7 @@ export class QuoteService {
       return quotes;
     } catch (err) {
       console.log(err);
-      throw new HttpException(
-        'Something went wrong',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw internalServerError;
     }
   }
 
@@ -40,16 +47,10 @@ export class QuoteService {
       console.log(err);
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
         if (err.code === 'P2025') {
-          throw new HttpException(
-            'No quote with such ID',
-            HttpStatus.BAD_REQUEST,
-          );
+          throw noQuoteWithSuchId;
         }
       }
-      throw new HttpException(
-        'Something went wrong',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw internalServerError;
     }
   }
 
@@ -60,10 +61,7 @@ export class QuoteService {
       return quotes[index];
     } catch (err) {
       console.log(err);
-      throw new HttpException(
-        'Something went wrong',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw internalServerError;
     }
   }
 
@@ -109,10 +107,7 @@ export class QuoteService {
           );
         }
       }
-      throw new HttpException(
-        'Something went wrong',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw internalServerError;
     }
   }
 
@@ -146,16 +141,10 @@ export class QuoteService {
       console.log(err);
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
         if (err.code === 'P2025') {
-          throw new HttpException(
-            'No quote with such ID',
-            HttpStatus.BAD_REQUEST,
-          );
+          throw noQuoteWithSuchId;
         }
       }
-      throw new HttpException(
-        'Something went wrong',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw internalServerError;
     }
   }
 }
