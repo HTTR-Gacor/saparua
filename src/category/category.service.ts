@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { ConnectionService } from 'src/connection/connection.service';
 
 const internalServerError = new HttpException(
@@ -25,13 +26,26 @@ export class CategoryService {
   }
 
   async createCategory(name: string) {
-    const prisma = ConnectionService.connectDb();
-    const newCategory = await prisma.category.create({
-      data: {
-        name,
-      },
-    });
-    return newCategory;
+    try {
+      const prisma = ConnectionService.connectDb();
+      const newCategory = await prisma.category.create({
+        data: {
+          name,
+        },
+      });
+      return newCategory;
+    } catch (err) {
+      console.log(err);
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === 'P2002') {
+          throw new HttpException(
+            'Category with exact name already exists',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+      throw internalServerError;
+    }
   }
 
   async deleteCateogry(id: string) {
