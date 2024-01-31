@@ -7,11 +7,6 @@ const internalServerError = new HttpException(
   HttpStatus.INTERNAL_SERVER_ERROR,
 );
 
-const noCategoryWithSuchId = new HttpException(
-  'No category with such ID',
-  HttpStatus.BAD_REQUEST,
-);
-
 @Injectable()
 export class CategoryService {
   async getAllCategories() {
@@ -49,11 +44,29 @@ export class CategoryService {
   }
 
   async deleteCateogry(id: string) {
-    const prisma = ConnectionService.connectDb();
-    await prisma.category.delete({
-      where: {
-        id: id,
-      },
-    });
+    try {
+      const prisma = ConnectionService.connectDb();
+      await prisma.category.delete({
+        where: {
+          id: id,
+        },
+      });
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Successfully delete category',
+      };
+    } catch (err) {
+      console.log(err);
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === 'P2025') {
+          throw new HttpException(
+            'No category with such ID',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+      throw internalServerError;
+    }
   }
 }
