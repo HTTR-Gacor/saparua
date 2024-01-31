@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Quote } from '@prisma/client';
+import { Prisma, Quote } from '@prisma/client';
 import { ConnectionService } from 'src/connection/connection.service';
 
 @Injectable()
@@ -72,25 +72,47 @@ export class QuoteService {
     verified: boolean,
     categoryIds: string[],
   ) {
-    const prisma = ConnectionService.connectDb();
+    try {
+      const prisma = ConnectionService.connectDb();
 
-    const setCategoryIds = categoryIds.map((id) => ({
-      id,
-    }));
+      const setCategoryIds = categoryIds.map((id) => ({
+        id,
+      }));
 
-    const newQuote = await prisma.quote.create({
-      data: {
-        quote,
-        author,
-        verified,
-        categories: { connect: setCategoryIds },
-      },
-      include: {
-        categories: true,
-      },
-    });
+      const newQuote = await prisma.quote.create({
+        data: {
+          quote,
+          author,
+          verified,
+          categories: { connect: setCategoryIds },
+        },
+        include: {
+          categories: true,
+        },
+      });
 
-    return newQuote;
+      return newQuote;
+    } catch (err) {
+      console.log(err);
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === 'P2002') {
+          throw new HttpException(
+            'Quote with exact words already exists',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        if (err.code === 'P2025') {
+          throw new HttpException(
+            'One or more categories cannot be found',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async editQuote(quote: string, author: string, verified: boolean) {
