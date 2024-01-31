@@ -129,11 +129,32 @@ export class QuoteService {
   }
 
   async deleteQuote(id: string) {
-    const prisma = ConnectionService.connectDb();
-    await prisma.quote.delete({
-      where: {
-        id,
-      },
-    });
+    try {
+      const prisma = ConnectionService.connectDb();
+      await prisma.quote.delete({
+        where: {
+          id,
+        },
+      });
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Successfully delete quote',
+      };
+    } catch (err) {
+      console.log(err);
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === 'P2025') {
+          throw new HttpException(
+            'No quote with such ID',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

@@ -32,6 +32,6 @@ export class QuoteController {
 
   @Delete(':id')
   async deleteQuote(@Param('id') id: string) {
-    await this.quoteService.deleteQuote(id);
+    return this.quoteService.deleteQuote(id);
   }
 }
