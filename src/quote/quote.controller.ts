@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Param, Delete, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Param,
+  Delete,
+  Put,
+} from '@nestjs/common';
 import { QuoteService } from './quote.service';
 
 @Controller('quote')
@@ -15,15 +23,21 @@ export class QuoteController {
     return this.quoteService.createQuote(quote, author, verified, categoryIds);
   }
 
-  @Put('edit')
+  @Put(':id')
   async editQuote(
-    @Body('id') id: string,
+    @Param('id') id: string,
     @Body('quote') quote: string,
     @Body('author') author: string,
     @Body('verified') verified: boolean,
     @Body('categoryIds') categoryIds: string[],
-  ){
-    return this.quoteService.editQuote(id, quote, author, verified, categoryIds);
+  ) {
+    return this.quoteService.editQuote(
+      id,
+      quote,
+      author,
+      verified,
+      categoryIds,
+    );
   }
 
   @Get()
