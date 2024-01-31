@@ -54,8 +54,16 @@ export class QuoteService {
 
   async getRandomQuote() {
     const quotes: Quote[] = await this.getAllQuotes();
-    const index = Math.floor(Math.random() * quotes.length);
-    return quotes[index];
+    try {
+      const index = Math.floor(Math.random() * quotes.length);
+      return quotes[index];
+    } catch (err) {
+      console.log(err);
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async createQuote(
