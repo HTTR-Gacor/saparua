@@ -1,17 +1,26 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Quote } from '@prisma/client';
 import { ConnectionService } from 'src/connection/connection.service';
 
 @Injectable()
 export class QuoteService {
   async getAllQuotes(): Promise<Quote[]> {
-    const prisma = ConnectionService.connectDb();
-    const quotes = await prisma.quote.findMany({
-      include: {
-        categories: true,
-      },
-    });
-    return quotes;
+    try {
+      const prisma = ConnectionService.connectDb();
+      const quotes = await prisma.quote.findMany({
+        include: {
+          categories: true,
+        },
+      });
+
+      return quotes;
+    } catch (err) {
+      console.log(err);
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async getQuoteById(id: string) {
