@@ -111,17 +111,29 @@ export class QuoteService {
     }
   }
 
-  async editQuote(quote: string, author: string, verified: boolean) {
-    const prisma = ConnectionService.connectDb();
-    // const editQuote = await prisma.quote.update({
-    //   data: {
-    //     quote,
-    //     author,
-    //     verified,
-    //   },
-    // });
-
-    // return editQuote;
+  async editQuote(id: string, quote: string, author: string, verified: boolean, categoryIds: string[]) {
+    try{
+      const prisma = ConnectionService.connectDb();
+      const setCategoryIds = categoryIds.map((id) => ({id}));
+      const modifiedQuote = await prisma.quote.update({
+        data: {
+          quote,
+          author,
+          verified,
+          categories: { connect: setCategoryIds },
+        },
+        include: {
+          categories: true,
+        },
+        where: {
+          id
+        },
+      });
+      return modifiedQuote;
+    }
+    catch (err) {
+      throw internalServerError;
+    }
   }
 
   async deleteQuote(id: string) {
