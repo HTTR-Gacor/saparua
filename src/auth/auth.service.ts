@@ -5,17 +5,17 @@ const bcrypt = require('bcryptjs');
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usersService: UsersService, private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async signIn(username: string, password: string) {
     const user = await this.usersService.findOne(username);
 
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
-      throw new HttpException(
-        'Invalid password',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new HttpException('Invalid password', HttpStatus.UNAUTHORIZED);
     }
 
     const payload = { sub: user.username };
