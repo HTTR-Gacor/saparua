@@ -1,85 +1,173 @@
-import { Injectable } from '@nestjs/common';
-import { Quote } from '@prisma/client';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Prisma, Quote } from '@prisma/client';
 import { ConnectionService } from 'src/connection/connection.service';
+
+const internalServerError = new HttpException(
+  'Something went wrong',
+  HttpStatus.INTERNAL_SERVER_ERROR,
+);
+
+const noQuoteWithSuchId = new HttpException(
+  'No quote with such ID',
+  HttpStatus.BAD_REQUEST,
+);
 
 @Injectable()
 export class QuoteService {
   async getAllQuotes(): Promise<Quote[]> {
-    const prisma = ConnectionService.connectDb();
-    const quotes = await prisma.quote.findMany({
-      include: {
-        categories: true,
-      },
-    });
-    return quotes;
+    try {
+      const prisma = ConnectionService.connectDb();
+      const quotes = await prisma.quote.findMany({
+        include: {
+          categories: true,
+        },
+      });
+
+      return quotes;
+    } catch (err) {
+      console.log(err);
+      throw internalServerError;
+    }
   }
 
   async getQuoteById(id: string) {
-    const prisma = ConnectionService.connectDb();
-    const quote = await prisma.quote.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        categories: true,
-      },
-    });
+    try {
+      const prisma = ConnectionService.connectDb();
+      const quote = await prisma.quote.findUniqueOrThrow({
+        where: {
+          id,
+        },
+        include: {
+          categories: true,
+        },
+      });
 
-    return quote;
+      return quote;
+    } catch (err) {
+      console.log(err);
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === 'P2025') {
+          throw noQuoteWithSuchId;
+        }
+      }
+      throw internalServerError;
+    }
   }
 
   async getRandomQuote() {
     const quotes: Quote[] = await this.getAllQuotes();
-    const index = Math.floor(Math.random() * quotes.length);
-    return quotes[index];
+    try {
+      const index = Math.floor(Math.random() * quotes.length);
+      return quotes[index];
+    } catch (err) {
+      console.log(err);
+      throw internalServerError;
+    }
   }
 
   async createQuote(
     quote: string,
     author: string,
     verified: boolean,
-    categories: string[],
+    categoryIds: string[],
   ) {
-    const prisma = ConnectionService.connectDb();
+    try {
+      const prisma = ConnectionService.connectDb();
 
-    const setCategories = categories.map((category) => ({
-      id: category,
-    }));
+      const setCategoryIds = categoryIds.map((id) => ({
+        id,
+      }));
 
-    const newQuote = await prisma.quote.create({
-      data: {
-        quote,
-        author,
-        verified,
-        categories: { connect: setCategories },
-      },
-      include: {
-        categories: true,
-      },
-    });
+      const newQuote = await prisma.quote.create({
+        data: {
+          quote,
+          author,
+          verified,
+          categories: { connect: setCategoryIds },
+        },
+        include: {
+          categories: true,
+        },
+      });
 
-    return newQuote;
+      return newQuote;
+    } catch (err) {
+      console.log(err);
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === 'P2002') {
+          throw new HttpException(
+            'Quote with exact words already exists',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        if (err.code === 'P2025') {
+          throw new HttpException(
+            'One or more categories cannot be found',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+      throw internalServerError;
+    }
   }
 
-  async editQuote(quote: string, author: string, verified: boolean) {
-    const prisma = ConnectionService.connectDb();
-    // const editQuote = await prisma.quote.update({
-    //   data: {
-    //     quote,
-    //     author,
-    //     verified,
-    //   },
-    // });
-
-    // return editQuote;
+  async editQuote(
+    id: string,
+    quote: string,
+    author: string,
+    verified: boolean,
+    categoryIds: string[],
+  ) {
+    try {
+      const prisma = ConnectionService.connectDb();
+      const setCategoryIds = categoryIds.map((id) => ({ id }));
+      const modifiedQuote = await prisma.quote.update({
+        data: {
+          quote,
+          author,
+          verified,
+          categories: { set: setCategoryIds },
+        },
+        include: {
+          categories: true,
+        },
+        where: {
+          id,
+        },
+      });
+      return modifiedQuote;
+    } catch (err) {
+      console.log(err);
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === 'P2025') {
+          throw noQuoteWithSuchId;
+        }
+      }
+      throw internalServerError;
+    }
   }
 
   async deleteQuote(id: string) {
-    const prisma = ConnectionService.connectDb();
-    await prisma.quote.delete({
-      where: {
-        id,
-      },
-    });
+    try {
+      const prisma = ConnectionService.connectDb();
+      await prisma.quote.delete({
+        where: {
+          id,
+        },
+      });
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Successfully delete quote',
+      };
+    } catch (err) {
+      console.log(err);
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === 'P2025') {
+          throw noQuoteWithSuchId;
+        }
+      }
+      throw internalServerError;
+    }
   }
 }
