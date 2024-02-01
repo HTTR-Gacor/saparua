@@ -9,10 +9,11 @@ const internalServerError = new HttpException(
 
 @Injectable()
 export class CategoryService {
+  private readonly prisma = ConnectionService.connectDb();
+
   async getAllCategories() {
     try {
-      const prisma = ConnectionService.connectDb();
-      const categories = await prisma.category.findMany();
+      const categories = await this.prisma.category.findMany();
       return categories;
     } catch (err) {
       console.log(err);
@@ -22,8 +23,7 @@ export class CategoryService {
 
   async createCategory(name: string) {
     try {
-      const prisma = ConnectionService.connectDb();
-      const newCategory = await prisma.category.create({
+      const newCategory = await this.prisma.category.create({
         data: {
           name,
         },
@@ -45,8 +45,7 @@ export class CategoryService {
 
   async deleteCateogry(id: string) {
     try {
-      const prisma = ConnectionService.connectDb();
-      await prisma.category.delete({
+      await this.prisma.category.delete({
         where: {
           id: id,
         },

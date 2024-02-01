@@ -14,10 +14,11 @@ const noQuoteWithSuchId = new HttpException(
 
 @Injectable()
 export class QuoteService {
+  private readonly prisma = ConnectionService.connectDb();
+
   async getAllQuotes(): Promise<Quote[]> {
     try {
-      const prisma = ConnectionService.connectDb();
-      const quotes = await prisma.quote.findMany({
+      const quotes = await this.prisma.quote.findMany({
         include: {
           categories: true,
         },
@@ -32,8 +33,7 @@ export class QuoteService {
 
   async getQuoteById(id: string) {
     try {
-      const prisma = ConnectionService.connectDb();
-      const quote = await prisma.quote.findUniqueOrThrow({
+      const quote = await this.prisma.quote.findUniqueOrThrow({
         where: {
           id,
         },
@@ -72,13 +72,11 @@ export class QuoteService {
     categoryIds: string[],
   ) {
     try {
-      const prisma = ConnectionService.connectDb();
-
       const setCategoryIds = categoryIds.map((id) => ({
         id,
       }));
 
-      const newQuote = await prisma.quote.create({
+      const newQuote = await this.prisma.quote.create({
         data: {
           quote,
           author,
@@ -119,9 +117,8 @@ export class QuoteService {
     categoryIds: string[],
   ) {
     try {
-      const prisma = ConnectionService.connectDb();
       const setCategoryIds = categoryIds.map((id) => ({ id }));
-      const modifiedQuote = await prisma.quote.update({
+      const modifiedQuote = await this.prisma.quote.update({
         data: {
           quote,
           author,
@@ -149,8 +146,7 @@ export class QuoteService {
 
   async deleteQuote(id: string) {
     try {
-      const prisma = ConnectionService.connectDb();
-      await prisma.quote.delete({
+      await this.prisma.quote.delete({
         where: {
           id,
         },

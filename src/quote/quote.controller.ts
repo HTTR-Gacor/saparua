@@ -6,13 +6,16 @@ import {
   Param,
   Delete,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { QuoteService } from './quote.service';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('quote')
 export class QuoteController {
   constructor(private readonly quoteService: QuoteService) {}
 
+  @UseGuards(AuthGuard)
   @Post()
   async createQuote(
     @Body('quote') quote: string,
@@ -23,6 +26,7 @@ export class QuoteController {
     return this.quoteService.createQuote(quote, author, verified, categoryIds);
   }
 
+  @UseGuards(AuthGuard)
   @Put(':id')
   async editQuote(
     @Param('id') id: string,
@@ -55,6 +59,7 @@ export class QuoteController {
     return this.quoteService.getRandomQuote();
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':id')
   async deleteQuote(@Param('id') id: string) {
     return this.quoteService.deleteQuote(id);
